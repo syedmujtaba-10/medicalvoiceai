@@ -82,8 +82,10 @@ export async function POST(req: Request): Promise<NextResponse<ChatResponse | { 
     let slotsText: string | undefined
     let matchedDoctorText: string | undefined
 
-    // If we're in matching stage, prepare doctor match info
-    if (conversationState.stage === 'matching' || conversationState.stage === 'slot_selection') {
+    // Inject slots whenever we have a reason — not just at matching stage.
+    // This eliminates the one-turn lag where Claude transitions TO matching but
+    // the context hasn't been updated yet, causing it to spin with no data.
+    if (conversationState.collected?.reason) {
       const reason = conversationState.collected?.reason
       if (reason) {
         const match = matchBestDoctor(reason)

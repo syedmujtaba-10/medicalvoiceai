@@ -147,6 +147,9 @@ export async function POST(req: Request) {
             if (fn.name === 'bookAppointment') {
               const args =
                 typeof fn.arguments === 'string' ? JSON.parse(fn.arguments) : fn.arguments
+
+              console.log('[bookAppointment] received args:', JSON.stringify(args))
+
               const {
                 doctorId,
                 slotId,
@@ -165,6 +168,16 @@ export async function POST(req: Request) {
                 patientDob?: string
                 reason: string
                 smsOptIn?: boolean
+              }
+
+              // Validate required fields before touching the DB
+              if (!patientEmail || !patientName || !doctorId || !slotId || !reason) {
+                const missing = ['patientEmail', 'patientName', 'doctorId', 'slotId', 'reason']
+                  .filter((k) => !args[k])
+                  .join(', ')
+                result = `Cannot book appointment — missing required fields: ${missing}. Please collect this information from the patient and try again.`
+                results.push({ toolCallId: id, result })
+                continue
               }
 
               // Look up existing patient by email, or create a new record
