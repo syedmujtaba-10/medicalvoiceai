@@ -102,6 +102,16 @@ export function buildContextBlock(
     parts.push(`Matched specialist:\n${matchedDoctorInfo}`)
   }
 
+  // Always include all doctors' office hours so Kyra can answer scheduling questions
+  const { DOCTORS } = require('@/lib/doctors')
+  const hoursBlock = (DOCTORS as Array<{ firstName: string; lastName: string; specialty: { name: string }; officeHours: { days: string; hours: string; notes?: string } }>)
+    .map((d) =>
+      `Dr. ${d.firstName} ${d.lastName} (${d.specialty.name}): ${d.officeHours.days}, ${d.officeHours.hours}` +
+      (d.officeHours.notes ? ` — ${d.officeHours.notes}` : ''),
+    )
+    .join('\n')
+  parts.push(`Doctor office hours (answer these questions directly):\n${hoursBlock}`)
+
   if (availableSlots) {
     parts.push(
       `Available appointment slots (present these to the patient):\n${availableSlots}\n\nWhen the patient chooses a slot, confirm it clearly and set action to "book_appointment" with the slot's ID in actionData.`,

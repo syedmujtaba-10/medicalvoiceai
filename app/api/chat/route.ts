@@ -82,21 +82,24 @@ export async function POST(req: Request): Promise<NextResponse<ChatResponse | { 
     let slotsText: string | undefined
     let matchedDoctorText: string | undefined
 
-    // Inject slots whenever we have a reason — not just at matching stage.
-    // This eliminates the one-turn lag where Claude transitions TO matching but
-    // the context hasn't been updated yet, causing it to spin with no data.
-    if (conversationState.collected?.reason) {
-      const reason = conversationState.collected?.reason
-      if (reason) {
-        const match = matchBestDoctor(reason)
-        if (match) {
-          const slots = getAvailableSlots(match.doctor.id, 6)
-          slotsText = formatSlotsForAI(slots)
-          matchedDoctorText =
-            `Dr. ${match.doctor.firstName} ${match.doctor.lastName}, ${match.doctor.title}\n` +
-            `Specialty: ${match.doctor.specialty.name}\n` +
-            `Bio: ${match.doctor.bio}`
-        }
+    // Inject slots as soon as we have any medical reason to match against.
+    // We try TWO sources in priority order:
+    //   1. The current user message — catches "I want to see a pulmonologist" on this
+    //      very turn, before Claude has a chance to update the stored reason.
+    //   2. The previously stored reason — covers follow-up turns where the message
+    //      itself no longer contains the symptom.
+    // This eliminates the one-turn lag that caused "let me search…" dead turns.
+    const reasonCandidates = [message.trim(), conversationState.collected?.reason ?? ''].filter(Boolean)
+    for (const candidate of reasonCandidates) {
+      const match = matchBestDoctor(candidate)
+      if (match) {
+        const slots = getAvailableSlots(match.doctor.id, 6)
+        slotsText = formatSlotsForAI(slots)
+        matchedDoctorText =
+          `Dr. ${match.doctor.firstName} ${match.doctor.lastName}, ${match.doctor.title}\n` +
+          `Specialty: ${match.doctor.specialty.name}\n` +
+          `Bio: ${match.doctor.bio}`
+        break
       }
     }
 

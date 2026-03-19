@@ -56,8 +56,12 @@ export async function POST(req: Request) {
 
         const phoneNumber = message.call?.customer?.number ?? null
 
-        // For web-initiated calls, link to the existing web conversation via voice_sessions
+        // Resolve the originating session token so we can link to the web conversation.
+        // Phone calls: match by phone number.
+        // Browser calls: match the most recent voice_session created in the last 60s
+        // (handoff route inserts it just before vapi.start() is called).
         let sessionToken = `voice-${callId}`
+
         if (phoneNumber) {
           const { data: voiceSession } = await db
             .from('voice_sessions')
@@ -69,12 +73,28 @@ export async function POST(req: Request) {
 
           if (voiceSession) {
             sessionToken = voiceSession.session_token
-            await db
-              .from('voice_sessions')
-              .update({ last_active: new Date().toISOString() })
-              .eq('session_token', sessionToken)
+          }
+        } else {
+          // Browser call — find the most recent voice_session without a phone (created by handoff)
+          const cutoff = new Date(Date.now() - 60_000).toISOString()
+          const { data: voiceSession } = await db
+            .from('voice_sessions')
+            .select('session_token')
+            .is('phone_number', null)
+            .gte('last_active', cutoff)
+            .order('last_active', { ascending: false })
+            .limit(1)
+            .single()
+
+          if (voiceSession) {
+            sessionToken = voiceSession.session_token
           }
         }
+
+        await db
+          .from('voice_sessions')
+          .update({ last_active: new Date().toISOString() })
+          .eq('session_token', sessionToken)
 
         // If the web conversation exists, just add the vapi_call_id to it
         const { data: existing } = await db

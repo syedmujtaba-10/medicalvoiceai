@@ -10,17 +10,22 @@ import { ChatInput } from './ChatInput'
 import { VoiceHandoffButton } from './VoiceHandoffButton'
 import { AppointmentCard } from './AppointmentCard'
 import { GlassCard } from '@/components/ui/GlassCard'
+import type { BookedAppointmentSummary } from '@/types'
 
 type PhoneCallStatus = 'idle' | 'calling' | 'initiated'
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+  onNewAppointment?: (appointment: BookedAppointmentSummary) => void
+}
+
+export function ChatInterface({ onNewAppointment }: ChatInterfaceProps) {
   const {
     messages,
     input,
     setInput,
     sendMessage,
     isLoading,
-    appointment,
+    appointments,
     sessionToken,
     conversationId,
     patientPhone,
@@ -36,6 +41,16 @@ export function ChatInterface() {
   useEffect(() => {
     scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isLoading])
+
+  // Bubble newly booked appointments up to the parent layout
+  const prevAppointmentCount = useRef(0)
+  useEffect(() => {
+    if (appointments.length > prevAppointmentCount.current) {
+      const newest = appointments[appointments.length - 1]
+      onNewAppointment?.(newest)
+      prevAppointmentCount.current = appointments.length
+    }
+  }, [appointments, onNewAppointment])
 
   const handleVoiceStart = () => {
     startCall(sessionToken, conversationId)
@@ -71,9 +86,9 @@ export function ChatInterface() {
   }, [patientPhone, phoneCallStatus, sessionToken, conversationId])
 
   return (
-    <div className="flex h-full flex-col gap-4">
-      {/* Message list */}
-      <GlassCard className="flex-1 overflow-hidden" rounded="3xl">
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      {/* Message list — flex-1 + min-h-0 lets it shrink so the bottom bar stays fixed */}
+      <GlassCard className="min-h-0 flex-1 overflow-hidden" rounded="3xl">
         <div className="flex h-full flex-col">
           {/* Chat header */}
           <div className="flex items-center gap-3 border-b border-[rgba(107,127,212,0.12)] px-6 py-4">
@@ -123,12 +138,12 @@ export function ChatInterface() {
                 ))}
               </AnimatePresence>
 
-              {/* Appointment confirmation card */}
-              {appointment && (
-                <div className="py-2">
-                  <AppointmentCard appointment={appointment} />
+              {/* Appointment confirmation cards — one per booking */}
+              {appointments.map((appt) => (
+                <div key={appt.confirmationCode} className="py-2">
+                  <AppointmentCard appointment={appt} />
                 </div>
-              )}
+              ))}
 
               {/* Typing indicator */}
               {isLoading && <TypingIndicator />}
@@ -140,39 +155,46 @@ export function ChatInterface() {
         </div>
       </GlassCard>
 
-      {/* Voice handoff */}
-      <GlassCard className="px-6 py-4" rounded="2xl">
-        <VoiceHandoffButton
-          status={vapiStatus}
-          onStart={handleVoiceStart}
-          onEnd={endCall}
-          onCallPhone={handleCallPhone}
-          phoneCallStatus={phoneCallStatus}
-          patientPhone={patientPhone}
-          disabled={messages.length === 0}
-          liveTranscript={liveTranscript}
-        />
+      {/* Fixed bottom bar — voice buttons + input in one card */}
+      <GlassCard className="shrink-0 px-4 py-3" rounded="2xl">
+        <div className="flex items-center gap-3">
+          {/* Voice buttons */}
+          <VoiceHandoffButton
+            status={vapiStatus}
+            onStart={handleVoiceStart}
+            onEnd={endCall}
+            onCallPhone={handleCallPhone}
+            phoneCallStatus={phoneCallStatus}
+            patientPhone={patientPhone}
+            disabled={messages.length === 0}
+            liveTranscript={liveTranscript}
+          />
+
+          {/* Divider */}
+          <div className="h-8 w-px shrink-0 bg-[rgba(107,127,212,0.15)]" />
+
+          {/* Text input — fills remaining space */}
+          <div className="flex-1">
+            <ChatInput
+              value={input}
+              onChange={setInput}
+              onSubmit={sendMessage}
+              disabled={isLoading || vapiStatus === 'active'}
+              placeholder={
+                vapiStatus === 'active'
+                  ? 'Voice call in progress…'
+                  : 'Type your message… (Enter to send)'
+              }
+            />
+          </div>
+        </div>
+
         {(vapiError || phoneCallError) && (
-          <p className="mt-3 text-center text-xs text-red-400 opacity-80">
+          <p className="mt-2 text-center text-xs text-red-400 opacity-80">
             {vapiError ?? phoneCallError}
           </p>
         )}
       </GlassCard>
-
-      {/* Input */}
-      <div className="shrink-0">
-        <ChatInput
-          value={input}
-          onChange={setInput}
-          onSubmit={sendMessage}
-          disabled={isLoading || vapiStatus === 'active'}
-          placeholder={
-            vapiStatus === 'active'
-              ? 'Voice call in progress…'
-              : 'Type your message… (Enter to send)'
-          }
-        />
-      </div>
     </div>
   )
 }

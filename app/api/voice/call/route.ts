@@ -105,7 +105,19 @@ export async function POST(req: Request) {
     }
 
     const callData = await vapiRes.json()
-    return NextResponse.json({ callId: callData.id, status: 'initiated' })
+    const vapiCallId: string = callData.id
+
+    // Immediately link the Vapi call ID to the web conversation so that:
+    // 1. Voice transcripts get persisted against the right conversation
+    // 2. bookAppointment tool calls find the conversation_id without a race condition
+    if (conversationId && vapiCallId) {
+      await db
+        .from('conversations')
+        .update({ vapi_call_id: vapiCallId, channel: 'voice' })
+        .eq('id', conversationId)
+    }
+
+    return NextResponse.json({ callId: vapiCallId, status: 'initiated' })
   } catch (err) {
     console.error('[POST /api/voice/call]', err)
     return NextResponse.json({ error: 'Failed to initiate phone call.' }, { status: 500 })

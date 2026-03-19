@@ -58,6 +58,12 @@ export interface TimeSlot {
   booked: boolean
 }
 
+export interface DoctorOfficeHours {
+  days: string   // e.g. "Monday – Friday"
+  hours: string  // e.g. "9:00 AM – 5:00 PM ET"
+  notes?: string // e.g. "Closed alternate Fridays"
+}
+
 export interface Doctor {
   id: string
   firstName: string
@@ -65,6 +71,7 @@ export interface Doctor {
   title: string
   specialty: DoctorSpecialty
   bio: string
+  officeHours: DoctorOfficeHours
   availability: TimeSlot[]
 }
 

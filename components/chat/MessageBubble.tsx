@@ -1,3 +1,4 @@
+import ReactMarkdown from 'react-markdown'
 import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/types'
 
@@ -36,7 +37,41 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             : 'glass rounded-bl-sm text-[#E0E4FF]',
         )}
       >
-        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        {isUser ? (
+          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        ) : (
+          <ReactMarkdown
+            components={{
+              // Paragraphs — match existing text style, preserve spacing
+              p: ({ children }) => (
+                <p className="mb-2 break-words last:mb-0">{children}</p>
+              ),
+              // Bold
+              strong: ({ children }) => (
+                <strong className="font-semibold text-[#E8ECFF]">{children}</strong>
+              ),
+              // Bullet lists
+              ul: ({ children }) => (
+                <ul className="mb-2 ml-4 list-disc space-y-1 last:mb-0">{children}</ul>
+              ),
+              // Numbered lists
+              ol: ({ children }) => (
+                <ol className="mb-2 ml-4 list-decimal space-y-1 last:mb-0">{children}</ol>
+              ),
+              li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+              // Inline code
+              code: ({ children }) => (
+                <code className="rounded bg-[rgba(107,127,212,0.15)] px-1 py-0.5 text-[11px] text-[#B0BEFF]">
+                  {children}
+                </code>
+              ),
+              // Horizontal rule
+              hr: () => <hr className="my-2 border-[rgba(107,127,212,0.2)]" />,
+            }}
+          >
+            {message.content}
+          </ReactMarkdown>
+        )}
         <p
           className={cn(
             'mt-1.5 text-[10px]',

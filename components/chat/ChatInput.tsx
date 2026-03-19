@@ -54,10 +54,10 @@ export function ChatInput({
           placeholder={placeholder}
           rows={1}
           className={cn(
-            'w-full resize-none rounded-2xl px-4 py-3 text-sm leading-relaxed',
-            'glass text-[#E8ECFF] placeholder:text-[#5A5C78]',
+            'w-full resize-none bg-transparent px-2 py-2 text-sm leading-relaxed',
+            'text-[#E8ECFF] placeholder:text-[#5A5C78]',
             'transition-all duration-200',
-            'focus:outline-none focus:ring-2 focus:ring-[rgba(107,127,212,0.5)] focus:border-[rgba(107,127,212,0.4)]',
+            'focus:outline-none',
             disabled && 'cursor-not-allowed opacity-50',
           )}
           style={{ maxHeight: '160px', minHeight: '48px' }}

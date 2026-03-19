@@ -21,7 +21,7 @@ interface UseChatReturn {
   sendMessage: () => Promise<void>
   isLoading: boolean
   stage: ConversationStage
-  appointment: BookedAppointmentSummary | null
+  appointments: BookedAppointmentSummary[]
   sessionToken: string
   conversationId: string | null
   patientPhone: string | null
@@ -33,7 +33,7 @@ export function useChat(): UseChatReturn {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [stage, setStage] = useState<ConversationStage>('greeting')
-  const [appointment, setAppointment] = useState<BookedAppointmentSummary | null>(null)
+  const [appointments, setAppointments] = useState<BookedAppointmentSummary[]>([])
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [patientPhone, setPatientPhone] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -128,7 +128,7 @@ export function useChat(): UseChatReturn {
       }
 
       if (data.appointment) {
-        setAppointment(data.appointment)
+        setAppointments((prev) => [...prev, data.appointment!])
       }
 
       const assistantMessage: ChatMessage = {
@@ -167,7 +167,7 @@ export function useChat(): UseChatReturn {
     sendMessage,
     isLoading,
     stage,
-    appointment,
+    appointments,
     sessionToken: sessionToken.current,
     conversationId,
     patientPhone,

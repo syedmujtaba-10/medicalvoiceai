@@ -71,6 +71,7 @@ export const DOCTORS: Doctor[] = [
       ],
     },
     bio: 'Board-certified cardiologist with 15 years of experience in interventional cardiology and preventive heart care.',
+    officeHours: { days: 'Monday – Friday', hours: '9:00 AM – 5:00 PM ET', notes: 'Closed alternate Fridays' },
     availability: generateSlots('sarah-chen', 42_317),
   },
   {
@@ -90,6 +91,7 @@ export const DOCTORS: Doctor[] = [
       ],
     },
     bio: 'Fellowship-trained orthopedic spine surgeon specializing in minimally invasive procedures and complex spinal reconstruction.',
+    officeHours: { days: 'Monday, Wednesday, Friday', hours: '8:00 AM – 4:00 PM ET', notes: 'Surgery days: Tuesday & Thursday (no clinic)' },
     availability: generateSlots('marcus-williams', 78_901),
   },
   {
@@ -112,6 +114,7 @@ export const DOCTORS: Doctor[] = [
       ],
     },
     bio: 'Sports medicine and orthopedic specialist with expertise in ACL reconstruction, joint replacement, and minimally invasive arthroscopic surgery.',
+    officeHours: { days: 'Monday – Thursday', hours: '9:00 AM – 5:00 PM ET', notes: 'Friday: urgent/post-op visits only' },
     availability: generateSlots('elena-rodriguez', 13_579),
   },
   {
@@ -132,6 +135,7 @@ export const DOCTORS: Doctor[] = [
       ],
     },
     bio: 'Neurologist and researcher specializing in movement disorders, epilepsy, and cognitive neurology with a focus on precision diagnostics.',
+    officeHours: { days: 'Tuesday – Friday', hours: '9:00 AM – 4:30 PM ET', notes: 'Monday: research & teaching (no clinic)' },
     availability: generateSlots('james-park', 55_246),
   },
   {
@@ -151,6 +155,7 @@ export const DOCTORS: Doctor[] = [
       ],
     },
     bio: 'Pulmonologist and critical care specialist with deep expertise in obstructive lung disease, sleep-related breathing disorders, and interstitial lung disease.',
+    officeHours: { days: 'Monday – Friday', hours: '8:30 AM – 4:30 PM ET', notes: 'Pulmonary function testing: Mon, Wed, Fri mornings only' },
     availability: generateSlots('aisha-thompson', 99_123),
   },
 ]
