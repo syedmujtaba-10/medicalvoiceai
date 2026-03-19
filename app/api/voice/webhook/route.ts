@@ -29,18 +29,26 @@ export async function POST(req: Request) {
       case 'transcript': {
         if (message.transcriptType !== 'final') break
 
-        const callId = message.call?.id
-        if (!callId) break
+        // Prefer metadata.conversationId (reliable, set at call start via assistantOverrides)
+        // Fall back to vapi_call_id lookup for phone calls where metadata isn't available
+        const metaConvId = message.call?.metadata?.conversationId as string | undefined
+        let targetConvId: string | null = metaConvId ?? null
 
-        const { data: conv } = await db
-          .from('conversations')
-          .select('id')
-          .eq('vapi_call_id', callId)
-          .single()
+        if (!targetConvId) {
+          const callId = message.call?.id
+          if (callId) {
+            const { data: conv } = await db
+              .from('conversations')
+              .select('id')
+              .eq('vapi_call_id', callId)
+              .single()
+            targetConvId = conv?.id ?? null
+          }
+        }
 
-        if (conv) {
+        if (targetConvId && message.transcript) {
           await db.from('messages').insert({
-            conversation_id: conv.id,
+            conversation_id: targetConvId,
             role: message.role === 'user' ? 'user' : 'assistant',
             content: message.transcript,
             channel: 'voice',
@@ -54,12 +62,18 @@ export async function POST(req: Request) {
         const callId = message.call?.id
         if (!callId) break
 
-        const phoneNumber = message.call?.customer?.number ?? null
+        // Browser calls: metadata.conversationId is set via assistantOverrides — use it directly
+        const metaConvId = message.call?.metadata?.conversationId as string | undefined
+        if (metaConvId) {
+          await db
+            .from('conversations')
+            .update({ vapi_call_id: callId, channel: 'voice' })
+            .eq('id', metaConvId)
+          break
+        }
 
-        // Resolve the originating session token so we can link to the web conversation.
-        // Phone calls: match by phone number.
-        // Browser calls: match the most recent voice_session created in the last 60s
-        // (handoff route inserts it just before vapi.start() is called).
+        // Phone calls / reconnect: fall back to session_token lookup via phone number
+        const phoneNumber = message.call?.customer?.number ?? null
         let sessionToken = `voice-${callId}`
 
         if (phoneNumber) {
@@ -71,24 +85,7 @@ export async function POST(req: Request) {
             .limit(1)
             .single()
 
-          if (voiceSession) {
-            sessionToken = voiceSession.session_token
-          }
-        } else {
-          // Browser call — find the most recent voice_session without a phone (created by handoff)
-          const cutoff = new Date(Date.now() - 60_000).toISOString()
-          const { data: voiceSession } = await db
-            .from('voice_sessions')
-            .select('session_token')
-            .is('phone_number', null)
-            .gte('last_active', cutoff)
-            .order('last_active', { ascending: false })
-            .limit(1)
-            .single()
-
-          if (voiceSession) {
-            sessionToken = voiceSession.session_token
-          }
+          if (voiceSession) sessionToken = voiceSession.session_token
         }
 
         await db
@@ -96,7 +93,6 @@ export async function POST(req: Request) {
           .update({ last_active: new Date().toISOString() })
           .eq('session_token', sessionToken)
 
-        // If the web conversation exists, just add the vapi_call_id to it
         const { data: existing } = await db
           .from('conversations')
           .select('id')

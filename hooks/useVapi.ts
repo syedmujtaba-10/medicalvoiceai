@@ -3,11 +3,16 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import type { VapiCallStatus } from '@/types'
 
+interface UseVapiCallbacks {
+  onTranscript?: (role: 'user' | 'assistant', text: string) => void
+  onCallEnd?: () => void
+}
+
 interface UseVapiReturn {
   status: VapiCallStatus
   liveTranscript: string
   errorMessage: string | null
-  startCall: (sessionToken: string, conversationId: string | null) => Promise<void>
+  startCall: (sessionToken: string, conversationId: string | null, callbacks?: UseVapiCallbacks) => Promise<void>
   endCall: () => void
 }
 
@@ -44,7 +49,7 @@ export function useVapi(): UseVapiReturn {
   }, [])
 
   const startCall = useCallback(
-    async (sessionToken: string, conversationId: string | null) => {
+    async (sessionToken: string, conversationId: string | null, callbacks?: UseVapiCallbacks) => {
       setStatus('connecting')
       setLiveTranscript('')
       setErrorMessage(null)
@@ -81,6 +86,7 @@ export function useVapi(): UseVapiReturn {
         vapi.on('call-end', () => {
           setStatus('ended')
           setLiveTranscript('')
+          callbacks?.onCallEnd?.()
         })
 
         // Generic error event — often fires with opaque objects
@@ -106,6 +112,9 @@ export function useVapi(): UseVapiReturn {
           }
           if (msg.type === 'transcript' && msg.transcriptType === 'final') {
             setLiveTranscript('')
+            const role = msg.role === 'user' ? 'user' : 'assistant'
+            const text = msg.transcript ?? ''
+            if (text) callbacks?.onTranscript?.(role, text)
           }
         })
 

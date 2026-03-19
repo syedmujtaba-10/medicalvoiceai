@@ -78,7 +78,10 @@ export async function POST(req: Request) {
     })
 
     const voiceSystemPrompt = buildVoiceSystemPrompt(contextSummary)
-    const assistantOverrides = buildAssistantOverrides(voiceSystemPrompt)
+    const assistantOverrides = buildAssistantOverrides(
+      voiceSystemPrompt,
+      conversationId ? { conversationId } : undefined,
+    )
 
     // Initiate the outbound call via Vapi REST API
     const vapiRes = await fetch('https://api.vapi.ai/call/phone', {

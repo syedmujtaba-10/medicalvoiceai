@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown'
+import { MicIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/types'
 
@@ -74,10 +75,13 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         )}
         <p
           className={cn(
-            'mt-1.5 text-[10px]',
-            isUser ? 'text-right text-[rgba(232,236,255,0.4)]' : 'text-[rgba(147,150,176,0.6)]',
+            'mt-1.5 flex items-center gap-1 text-[10px]',
+            isUser ? 'justify-end text-[rgba(232,236,255,0.4)]' : 'text-[rgba(147,150,176,0.6)]',
           )}
         >
+          {message.channel === 'voice' && (
+            <MicIcon className="h-2.5 w-2.5 opacity-60" />
+          )}
           {new Date(message.createdAt).toLocaleTimeString('en-US', {
             hour: 'numeric',
             minute: '2-digit',

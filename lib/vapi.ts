@@ -17,12 +17,19 @@ export interface VapiStartOptions {
  * - Tools so the voice AI can check availability and book appointments
  * - serverUrl so Vapi routes webhook events (transcripts, tool-calls) to our server
  */
-export function buildAssistantOverrides(contextSystemPrompt: string) {
+export function buildAssistantOverrides(
+  contextSystemPrompt: string,
+  metadata?: Record<string, unknown>,
+) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
   return {
     // Route all Vapi events (transcripts, tool-calls, call lifecycle) to our server
     serverUrl: `${appUrl}/api/voice/webhook`,
+
+    // Vapi echoes metadata back in every webhook payload — we use this to reliably
+    // identify the originating conversation without any fuzzy session matching.
+    ...(metadata ? { metadata } : {}),
 
     model: {
       provider: 'anthropic' as const,

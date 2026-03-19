@@ -29,6 +29,8 @@ export function ChatInterface({ onNewAppointment }: ChatInterfaceProps) {
     sessionToken,
     conversationId,
     patientPhone,
+    addVoiceMessage,
+    refreshMessages,
   } = useChat()
 
   const { status: vapiStatus, liveTranscript, errorMessage: vapiError, startCall, endCall } = useVapi()
@@ -37,10 +39,10 @@ export function ChatInterface({ onNewAppointment }: ChatInterfaceProps) {
 
   const scrollAnchorRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll to bottom on new messages (text or voice)
   useEffect(() => {
     scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, isLoading])
+  }, [messages, isLoading, vapiStatus])
 
   // Bubble newly booked appointments up to the parent layout
   const prevAppointmentCount = useRef(0)
@@ -53,7 +55,13 @@ export function ChatInterface({ onNewAppointment }: ChatInterfaceProps) {
   }, [appointments, onNewAppointment])
 
   const handleVoiceStart = () => {
-    startCall(sessionToken, conversationId)
+    startCall(sessionToken, conversationId, {
+      onTranscript: (role, text) => addVoiceMessage(role, text),
+      onCallEnd: () => {
+        // Give the webhook a moment to persist final transcripts, then sync from DB
+        setTimeout(() => refreshMessages(), 2000)
+      },
+    })
   }
 
   const handleCallPhone = useCallback(async () => {

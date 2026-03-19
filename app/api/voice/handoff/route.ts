@@ -74,7 +74,10 @@ export async function POST(req: Request) {
     })
 
     const voiceSystemPrompt = buildVoiceSystemPrompt(contextSummary)
-    const assistantOverrides = buildAssistantOverrides(voiceSystemPrompt)
+    const assistantOverrides = buildAssistantOverrides(
+      voiceSystemPrompt,
+      conversationId ? { conversationId } : undefined,
+    )
 
     return NextResponse.json({ assistantId, assistantOverrides })
   } catch (err) {

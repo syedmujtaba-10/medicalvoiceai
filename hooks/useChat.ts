@@ -26,6 +26,8 @@ interface UseChatReturn {
   conversationId: string | null
   patientPhone: string | null
   error: string | null
+  addVoiceMessage: (role: 'user' | 'assistant', content: string) => void
+  refreshMessages: () => Promise<void>
 }
 
 export function useChat(): UseChatReturn {
@@ -61,6 +63,35 @@ export function useChat(): UseChatReturn {
     const savedPhone = localStorage.getItem(PATIENT_PHONE_KEY)
     if (savedPhone) setPatientPhone(savedPhone)
   }, [])
+
+  const addVoiceMessage = useCallback((role: 'user' | 'assistant', content: string) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: uuidv4(),
+        role,
+        content,
+        channel: 'voice' as const,
+        createdAt: new Date().toISOString(),
+      },
+    ])
+  }, [])
+
+  const refreshMessages = useCallback(async () => {
+    const convId = conversationId
+    if (!convId) return
+    try {
+      const res = await fetch(`/api/conversations/${convId}`)
+      if (!res.ok) return
+      const data = await res.json()
+      if (data.messages?.length) {
+        setMessages(data.messages)
+        setStage(data.stage ?? 'greeting')
+      }
+    } catch {
+      // Non-critical — UI still shows inline voice messages
+    }
+  }, [conversationId])
 
   const restoreConversation = async (convId: string) => {
     try {
@@ -172,5 +203,7 @@ export function useChat(): UseChatReturn {
     conversationId,
     patientPhone,
     error,
+    addVoiceMessage,
+    refreshMessages,
   }
 }
