@@ -12,6 +12,7 @@ import type {
 
 const SESSION_TOKEN_KEY = 'kyron_session_token'
 const CONVERSATION_ID_KEY = 'kyron_conversation_id'
+const PATIENT_PHONE_KEY = 'kyron_patient_phone'
 
 interface UseChatReturn {
   messages: ChatMessage[]
@@ -23,6 +24,7 @@ interface UseChatReturn {
   appointment: BookedAppointmentSummary | null
   sessionToken: string
   conversationId: string | null
+  patientPhone: string | null
   error: string | null
 }
 
@@ -33,6 +35,7 @@ export function useChat(): UseChatReturn {
   const [stage, setStage] = useState<ConversationStage>('greeting')
   const [appointment, setAppointment] = useState<BookedAppointmentSummary | null>(null)
   const [conversationId, setConversationId] = useState<string | null>(null)
+  const [patientPhone, setPatientPhone] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   // Stable session token — persists across page refreshes
@@ -54,6 +57,9 @@ export function useChat(): UseChatReturn {
       // Restore prior conversation messages
       restoreConversation(savedConversationId)
     }
+
+    const savedPhone = localStorage.getItem(PATIENT_PHONE_KEY)
+    if (savedPhone) setPatientPhone(savedPhone)
   }, [])
 
   const restoreConversation = async (convId: string) => {
@@ -116,6 +122,11 @@ export function useChat(): UseChatReturn {
 
       setStage(data.stage)
 
+      if (data.patientPhone && !patientPhone) {
+        setPatientPhone(data.patientPhone)
+        localStorage.setItem(PATIENT_PHONE_KEY, data.patientPhone)
+      }
+
       if (data.appointment) {
         setAppointment(data.appointment)
       }
@@ -159,6 +170,7 @@ export function useChat(): UseChatReturn {
     appointment,
     sessionToken: sessionToken.current,
     conversationId,
+    patientPhone,
     error,
   }
 }

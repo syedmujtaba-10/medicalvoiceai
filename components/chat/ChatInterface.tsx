@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useChat } from '@/hooks/useChat'
 import { useVapi } from '@/hooks/useVapi'
@@ -10,6 +10,8 @@ import { ChatInput } from './ChatInput'
 import { VoiceHandoffButton } from './VoiceHandoffButton'
 import { AppointmentCard } from './AppointmentCard'
 import { GlassCard } from '@/components/ui/GlassCard'
+
+type PhoneCallStatus = 'idle' | 'calling' | 'initiated'
 
 export function ChatInterface() {
   const {
@@ -21,9 +23,12 @@ export function ChatInterface() {
     appointment,
     sessionToken,
     conversationId,
+    patientPhone,
   } = useChat()
 
   const { status: vapiStatus, liveTranscript, errorMessage: vapiError, startCall, endCall } = useVapi()
+  const [phoneCallStatus, setPhoneCallStatus] = useState<PhoneCallStatus>('idle')
+  const [phoneCallError, setPhoneCallError] = useState<string | null>(null)
 
   const scrollAnchorRef = useRef<HTMLDivElement>(null)
 
@@ -35,6 +40,35 @@ export function ChatInterface() {
   const handleVoiceStart = () => {
     startCall(sessionToken, conversationId)
   }
+
+  const handleCallPhone = useCallback(async () => {
+    if (!patientPhone || phoneCallStatus !== 'idle') return
+
+    setPhoneCallStatus('calling')
+    setPhoneCallError(null)
+
+    try {
+      const res = await fetch('/api/voice/call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionToken, conversationId, phoneNumber: patientPhone }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error ?? 'Failed to initiate call')
+      }
+
+      setPhoneCallStatus('initiated')
+
+      // Reset after 30 seconds so button can be used again if needed
+      setTimeout(() => setPhoneCallStatus('idle'), 30_000)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Could not place call'
+      setPhoneCallError(msg)
+      setPhoneCallStatus('idle')
+    }
+  }, [patientPhone, phoneCallStatus, sessionToken, conversationId])
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -112,12 +146,15 @@ export function ChatInterface() {
           status={vapiStatus}
           onStart={handleVoiceStart}
           onEnd={endCall}
+          onCallPhone={handleCallPhone}
+          phoneCallStatus={phoneCallStatus}
+          patientPhone={patientPhone}
           disabled={messages.length === 0}
           liveTranscript={liveTranscript}
         />
-        {vapiError && (
+        {(vapiError || phoneCallError) && (
           <p className="mt-3 text-center text-xs text-red-400 opacity-80">
-            {vapiError}
+            {vapiError ?? phoneCallError}
           </p>
         )}
       </GlassCard>

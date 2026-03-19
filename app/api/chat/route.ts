@@ -209,12 +209,16 @@ export async function POST(req: Request): Promise<NextResponse<ChatResponse | { 
       }
     }
 
+    // Expose patient phone so the UI can offer "call my phone" once intake is done
+    const patientPhone = newState?.collected?.phone ?? conversationState.collected?.phone ?? null
+
     // conversationId is always set by this point (created above if null)
     return NextResponse.json({
       text: cleanText,
       conversationId: conversationId as string,
       stage: newState?.stage ?? conversationState.stage ?? 'greeting',
       ...(patientId ? { patientId } : {}),
+      ...(patientPhone ? { patientPhone } : {}),
       ...(appointment ? { appointment } : {}),
     } satisfies ChatResponse)
   } catch (err) {

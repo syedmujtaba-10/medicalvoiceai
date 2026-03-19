@@ -102,6 +102,7 @@ export interface ChatResponse {
   conversationId: string
   stage: ConversationStage
   patientId?: string
+  patientPhone?: string
   appointment?: BookedAppointmentSummary
   availableSlots?: TimeSlot[]
   matchedDoctor?: Pick<Doctor, 'id' | 'firstName' | 'lastName' | 'specialty'>
