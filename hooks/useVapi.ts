@@ -109,10 +109,7 @@ export function useVapi(): UseVapiReturn {
           setStatus('error')
         })
 
-        vapi.on('message', (msg: { type: string; transcriptType?: string; role?: string; transcript?: string; call?: { id?: string } }) => {
-          // Capture call ID from message events as fallback (call-start may not include it)
-          if (msg.call?.id && !callIdRef.current) callIdRef.current = msg.call.id
-
+        vapi.on('message', (msg: { type: string; transcriptType?: string; role?: string; transcript?: string }) => {
           if (msg.type === 'transcript' && msg.transcriptType === 'partial' && msg.role === 'assistant') {
             setLiveTranscript(msg.transcript ?? '')
           }
@@ -124,8 +121,21 @@ export function useVapi(): UseVapiReturn {
           }
         })
 
-        // 4. Start the call
-        await vapi.start(assistantId, assistantOverrides)
+        // 4. Start the call — vapi.start() returns the Call object with its ID
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const call = await vapi.start(assistantId, assistantOverrides) as any
+        const callId: string | null = call?.id ?? null
+        callIdRef.current = callId
+
+        // 5. Link callId → conversationId in DB immediately after call starts.
+        //    This allows the webhook end-of-call-report to find the conversation by vapi_call_id.
+        if (callId && conversationId) {
+          fetch('/api/voice/link-call', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ callId, conversationId }),
+          }).catch(console.error)
+        }
       } catch (err) {
         const msg = serializeError(err)
         console.error('[startCall error]', msg)
