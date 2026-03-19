@@ -31,15 +31,11 @@ export async function POST(req: Request) {
 
     const callData = await vapiRes.json()
 
-    // Vapi stores messages under artifact.messages (array of {role, message, time})
-    // Some API versions use messages at top level — handle both
-    const vapiMessages: Array<{ role: string; message?: string; content?: string; time?: number }> =
-      callData.artifact?.messages ?? callData.messages ?? []
+    // Vapi stores messages in call.messages (top-level array).
+    // Roles: "user" = patient, "bot" = AI assistant, "system"/"tool"/"tool-result" = skip.
+    const vapiMessages: Array<{ role: string; message?: string }> = callData.messages ?? []
 
-    if (!vapiMessages.length) {
-      console.log('[save-transcript] No messages in call', callId)
-      return NextResponse.json({ stored: 0 })
-    }
+    console.log(`[save-transcript] call ${callId} has ${vapiMessages.length} raw messages`)
 
     const db = getServiceClient()
 
@@ -58,17 +54,17 @@ export async function POST(req: Request) {
 
     const existingContents = new Set((existing ?? []).map((m: { content: string }) => m.content))
 
-    // Insert new messages only
+    // Keep only user + bot messages with non-empty text not already stored
     const toInsert = vapiMessages
       .filter((m) => {
-        const role = m.role === 'user' ? 'user' : m.role === 'assistant' ? 'assistant' : null
-        const text = m.message ?? m.content ?? ''
-        return role && text && !existingContents.has(text)
+        const isUserOrBot = m.role === 'user' || m.role === 'bot'
+        const text = m.message ?? ''
+        return isUserOrBot && text && !existingContents.has(text)
       })
       .map((m) => ({
         conversation_id: conversationId,
         role: m.role === 'user' ? 'user' : 'assistant',
-        content: m.message ?? m.content ?? '',
+        content: m.message ?? '',
         channel: 'voice',
       }))
 

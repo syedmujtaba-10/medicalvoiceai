@@ -140,13 +140,13 @@ export async function POST(req: Request) {
         const callId = message.call?.id
         if (!callId) break
 
-        const vapiMessages: Array<{ role: string; message?: string; content?: string }> =
+        // Vapi stores messages in message.artifact.messages (same schema as GET /call/{id}).
+        // Roles: "user" = patient, "bot" = AI assistant — everything else is skipped.
+        const vapiMessages: Array<{ role: string; message?: string }> =
           message.artifact?.messages ?? []
 
-        if (!vapiMessages.length) break
-
-        // Resolve conversation — phone calls: by vapi_call_id (linked at call initiation)
-        // Browser calls with metadata: by conversationId in metadata
+        // Resolve conversation — browser calls: by vapi_call_id (linked via /api/voice/link-call)
+        // Phone calls: by vapi_call_id (linked immediately when call was initiated)
         const metaConvId = message.call?.metadata?.conversationId as string | undefined
         let convId: string | null = metaConvId ?? null
 
@@ -175,14 +175,14 @@ export async function POST(req: Request) {
 
         const toInsert = vapiMessages
           .filter((m) => {
-            const role = m.role === 'user' || m.role === 'assistant' ? m.role : null
-            const text = m.message ?? m.content ?? ''
-            return role && text && !existingContents.has(text)
+            const isUserOrBot = m.role === 'user' || m.role === 'bot'
+            const text = m.message ?? ''
+            return isUserOrBot && text && !existingContents.has(text)
           })
           .map((m) => ({
             conversation_id: convId,
             role: m.role === 'user' ? 'user' : 'assistant',
-            content: m.message ?? m.content ?? '',
+            content: m.message ?? '',
             channel: 'voice',
           }))
 
