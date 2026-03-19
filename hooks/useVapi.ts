@@ -79,10 +79,10 @@ export function useVapi(): UseVapiReturn {
         vapiRef.current = vapi
 
         // 3. Wire up event listeners — including the detailed `call-start-failed` event
-        vapi.on('call-start', (call: { id?: string } | undefined) => {
+        vapi.on('call-start', () => {
           setStatus('active')
           setErrorMessage(null)
-          if (call?.id) callIdRef.current = call.id
+          // callIdRef is populated from the first message event (msg.call?.id)
         })
 
         vapi.on('call-end', () => {
