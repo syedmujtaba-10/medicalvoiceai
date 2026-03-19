@@ -4,11 +4,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ─── Kyron Medical Design System ─────────────────────────────────────────── */
+/* Brand extracted from logo:
+   Primary Blue   #6B7FD4  (periwinkle — dominant logo color)
+   Brand Gray     #636478  (MEDICAL wordmark)
+   Dark Accent    #5A5C6E  (K icon stripes)
+*/
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* shadcn tokens */
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -45,9 +54,19 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Kyron brand palette */
+  --color-kyron-blue:       #6B7FD4;
+  --color-kyron-blue-light: #8B9BE0;
+  --color-kyron-blue-dark:  #4A5CB5;
+  --color-kyron-gray:       #636478;
+  --color-kyron-gray-light: #9396B0;
 }
 
+/* ─── CSS custom properties ────────────────────────────────────────────────── */
+
 :root {
+  /* shadcn / Radix base (dark-mode only app — these are overridden below) */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -116,14 +135,129 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ─── Global reset & base ──────────────────────────────────────────────────── */
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
     @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
+
+  body {
+    background-color: #0B0D1F;
+    color: #E8ECFF;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+}
+
+/* ─── Liquid Glass utility classes ─────────────────────────────────────────── */
+
+.glass {
+  background: rgba(107, 127, 212, 0.06);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(107, 127, 212, 0.18);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.glass-hover {
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-hover:hover {
+  background: rgba(107, 127, 212, 0.10);
+  border-color: rgba(107, 127, 212, 0.30);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.40),
+    0 0 0 1px rgba(107, 127, 212, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.glass-strong {
+  background: rgba(107, 127, 212, 0.10);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(107, 127, 212, 0.25);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* ─── Scrollbar ────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(107,127,212,0.3); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(107,127,212,0.5); }
+
+/* ─── Animations ───────────────────────────────────────────────────────────── */
+
+@keyframes orb-drift-1 {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  33%       { transform: translate(40px,-30px) scale(1.05); }
+  66%       { transform: translate(-20px,20px) scale(0.95); }
+}
+@keyframes orb-drift-2 {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  33%       { transform: translate(-50px,30px) scale(0.95); }
+  66%       { transform: translate(30px,-20px) scale(1.05); }
+}
+@keyframes orb-drift-3 {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  50%       { transform: translate(25px,25px) scale(1.08); }
+}
+@keyframes mic-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(107,127,212,0.5); }
+  50%       { box-shadow: 0 0 0 14px rgba(107,127,212,0); }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40%            { transform: translateY(-7px); opacity: 1; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(18px) scale(0.95); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-18px) scale(0.95); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+.animate-orb-1     { animation: orb-drift-1 18s ease-in-out infinite; }
+.animate-orb-2     { animation: orb-drift-2 22s ease-in-out infinite; }
+.animate-orb-3     { animation: orb-drift-3 26s ease-in-out infinite; }
+.animate-mic       { animation: mic-breathe 2.5s ease-in-out infinite; }
+.animate-pulse-ring{ animation: pulse-ring 1.5s ease-out infinite; }
+.animate-fade-up   { animation: fade-up 0.35s ease-out forwards; }
+.animate-slide-right { animation: slide-in-right 0.3s ease-out forwards; }
+.animate-slide-left  { animation: slide-in-left 0.3s ease-out forwards; }
+.dot-1 { animation: dot-bounce 1.2s ease-in-out infinite 0s; }
+.dot-2 { animation: dot-bounce 1.2s ease-in-out infinite 0.2s; }
+.dot-3 { animation: dot-bounce 1.2s ease-in-out infinite 0.4s; }
+
+/* ─── Focus ring ───────────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid rgba(107, 127, 212, 0.8);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
