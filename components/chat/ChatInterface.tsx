@@ -57,9 +57,14 @@ export function ChatInterface({ onNewAppointment }: ChatInterfaceProps) {
   const handleVoiceStart = () => {
     startCall(sessionToken, conversationId, {
       onTranscript: (role, text) => addVoiceMessage(role, text),
-      onCallEnd: () => {
-        // Give the webhook a moment to persist final transcripts, then sync from DB
-        setTimeout(() => refreshMessages(), 2000)
+      onCallEnd: (callId) => {
+        if (!callId || !conversationId) return
+        // Fetch full transcript from Vapi and store in DB, then sync local state
+        fetch('/api/voice/save-transcript', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callId, conversationId }),
+        }).then(() => refreshMessages()).catch(console.error)
       },
     })
   }

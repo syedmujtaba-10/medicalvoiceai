@@ -85,11 +85,25 @@ export function useChat(): UseChatReturn {
       if (!res.ok) return
       const data = await res.json()
       if (data.messages?.length) {
-        setMessages(data.messages)
+        // Merge: start with DB messages (authoritative), then append any locally-added
+        // voice messages that are newer than the latest DB message (not yet persisted).
+        // This prevents inline voice messages from disappearing if the webhook hasn't
+        // stored them yet (e.g., local dev where Vapi can't reach localhost).
+        setMessages((prev) => {
+          const dbMessages: ChatMessage[] = data.messages
+          const latestDbTime =
+            dbMessages.length > 0
+              ? new Date(dbMessages[dbMessages.length - 1].createdAt).getTime()
+              : 0
+          const pendingLocal = prev.filter(
+            (m) => m.channel === 'voice' && new Date(m.createdAt).getTime() > latestDbTime,
+          )
+          return [...dbMessages, ...pendingLocal]
+        })
         setStage(data.stage ?? 'greeting')
       }
     } catch {
-      // Non-critical — UI still shows inline voice messages
+      // Non-critical — inline voice messages remain visible
     }
   }, [conversationId])
 

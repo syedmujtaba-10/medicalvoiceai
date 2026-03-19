@@ -22,6 +22,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ result: 'no-op' })
     }
 
+    // Debug: log call metadata so we can confirm conversationId is echoed back
+    if (message.type === 'transcript' || message.type === 'call-started') {
+      console.log(`[webhook] type=${message.type} callId=${message.call?.id} metaConvId=${message.call?.metadata?.conversationId ?? 'MISSING'} transcriptType=${message.transcriptType ?? '-'}`)
+    }
+
     const db = getServiceClient()
 
     switch (message.type) {
@@ -123,6 +128,67 @@ export async function POST(req: Request) {
             .from('conversations')
             .update({ status: 'completed' })
             .eq('vapi_call_id', callId)
+        }
+        break
+      }
+
+      // ── Store full transcript when call ends (phone calls + browser fallback) ──
+      // Vapi fires this after processing is complete — artifact.messages has the full log.
+      // Browser calls also use this (client already stored via /api/voice/save-transcript,
+      // dedup prevents doubles). This is the only path for phone calls.
+      case 'end-of-call-report': {
+        const callId = message.call?.id
+        if (!callId) break
+
+        const vapiMessages: Array<{ role: string; message?: string; content?: string }> =
+          message.artifact?.messages ?? []
+
+        if (!vapiMessages.length) break
+
+        // Resolve conversation — phone calls: by vapi_call_id (linked at call initiation)
+        // Browser calls with metadata: by conversationId in metadata
+        const metaConvId = message.call?.metadata?.conversationId as string | undefined
+        let convId: string | null = metaConvId ?? null
+
+        if (!convId) {
+          const { data: conv } = await db
+            .from('conversations')
+            .select('id')
+            .eq('vapi_call_id', callId)
+            .single()
+          convId = conv?.id ?? null
+        }
+
+        if (!convId) {
+          console.log('[end-of-call-report] No conversation found for callId', callId)
+          break
+        }
+
+        // Deduplicate against already-stored voice messages
+        const { data: existing } = await db
+          .from('messages')
+          .select('content')
+          .eq('conversation_id', convId)
+          .eq('channel', 'voice')
+
+        const existingContents = new Set((existing ?? []).map((m: { content: string }) => m.content))
+
+        const toInsert = vapiMessages
+          .filter((m) => {
+            const role = m.role === 'user' || m.role === 'assistant' ? m.role : null
+            const text = m.message ?? m.content ?? ''
+            return role && text && !existingContents.has(text)
+          })
+          .map((m) => ({
+            conversation_id: convId,
+            role: m.role === 'user' ? 'user' : 'assistant',
+            content: m.message ?? m.content ?? '',
+            channel: 'voice',
+          }))
+
+        if (toInsert.length) {
+          await db.from('messages').insert(toInsert)
+          console.log(`[end-of-call-report] Stored ${toInsert.length} messages for conversation ${convId}`)
         }
         break
       }

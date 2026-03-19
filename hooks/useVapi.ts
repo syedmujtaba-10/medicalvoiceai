@@ -5,7 +5,7 @@ import type { VapiCallStatus } from '@/types'
 
 interface UseVapiCallbacks {
   onTranscript?: (role: 'user' | 'assistant', text: string) => void
-  onCallEnd?: () => void
+  onCallEnd?: (callId: string | null) => void
 }
 
 interface UseVapiReturn {
@@ -41,6 +41,7 @@ export function useVapi(): UseVapiReturn {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const vapiRef = useRef<any>(null)
+  const callIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     return () => {
@@ -78,15 +79,17 @@ export function useVapi(): UseVapiReturn {
         vapiRef.current = vapi
 
         // 3. Wire up event listeners — including the detailed `call-start-failed` event
-        vapi.on('call-start', () => {
+        vapi.on('call-start', (call: { id?: string } | undefined) => {
           setStatus('active')
           setErrorMessage(null)
+          if (call?.id) callIdRef.current = call.id
         })
 
         vapi.on('call-end', () => {
           setStatus('ended')
           setLiveTranscript('')
-          callbacks?.onCallEnd?.()
+          callbacks?.onCallEnd?.(callIdRef.current)
+          callIdRef.current = null
         })
 
         // Generic error event — often fires with opaque objects
@@ -106,7 +109,10 @@ export function useVapi(): UseVapiReturn {
           setStatus('error')
         })
 
-        vapi.on('message', (msg: { type: string; transcriptType?: string; role?: string; transcript?: string }) => {
+        vapi.on('message', (msg: { type: string; transcriptType?: string; role?: string; transcript?: string; call?: { id?: string } }) => {
+          // Capture call ID from message events as fallback (call-start may not include it)
+          if (msg.call?.id && !callIdRef.current) callIdRef.current = msg.call.id
+
           if (msg.type === 'transcript' && msg.transcriptType === 'partial' && msg.role === 'assistant') {
             setLiveTranscript(msg.transcript ?? '')
           }
