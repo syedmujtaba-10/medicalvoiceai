@@ -102,7 +102,7 @@ export function AppointmentConfirmationEmail({
           <Section style={footer}>
             <Text style={footerText}>
               Need to reschedule or have questions? Contact us at{' '}
-              <span style={link}>appointments@kyronmedical.com</span>
+              <span style={link}>appointments@wwwmedicalvoiceaidemo.org</span>
             </Text>
             <Text style={footerDisclaimer}>
               This email was sent to you because you scheduled an appointment

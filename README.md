@@ -361,3 +361,12 @@ push to master → SSH to EC2 → git pull → npm install → npm run build →
 
 Kyra is a scheduling assistant only. She is explicitly instructed never to provide medical advice, diagnoses, or treatment recommendations, and to redirect all clinical questions to the physician or to 911 in emergencies.
 
+---
+
+## Next Steps
+
+If I were extending this beyond the assessment, the next improvements I would prioritize are:
+
+- **Observability and monitoring** — add structured logging, metrics, and dashboards (for example Grafana) to track chat latency, voice handoff success rate, booking completion rate, webhook failures, and call disconnects.
+- **Authentication and patient accounts** — allow returning patients to securely log in, view upcoming appointments, and resume prior conversations across devices.
+- **Hybrid scheduling UX** — support both conversational booking through AI and a traditional UI flow for patients who prefer selecting a doctor, date, and time directly without chatting first.
