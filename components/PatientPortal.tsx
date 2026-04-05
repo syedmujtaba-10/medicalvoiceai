@@ -92,14 +92,18 @@ export function PatientPortal({ initialAppointments = [] }: PatientPortalProps) 
         <aside className="flex flex-col gap-5 overflow-y-auto p-5 lg:w-80 lg:shrink-0 xl:w-96">
           {/* Logo */}
           <GlassCard className="flex flex-col items-center gap-3 px-6 py-5" rounded="3xl">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/kyron_medical.webp"
-              alt="XYZ Medical"
-              width={180}
-              className="object-contain"
-              style={{ width: '180px', height: 'auto' }}
-            />
+            <div className="flex items-center gap-3">
+              {/* Medical cross icon */}
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="36" height="36" rx="10" fill="rgba(107,127,212,0.15)" />
+                <rect x="15" y="8" width="6" height="20" rx="3" fill="#6B7FD4" />
+                <rect x="8" y="15" width="20" height="6" rx="3" fill="#6B7FD4" />
+              </svg>
+              <div className="text-left">
+                <p className="text-base font-bold tracking-tight text-[#E8ECFF]">XYZ Medical</p>
+                <p className="text-[10px] text-[#636478]">Patient Portal</p>
+              </div>
+            </div>
             <div className="h-px w-full bg-[rgba(107,127,212,0.15)]" />
             <p className="text-center text-xs leading-relaxed text-[#636478]">
               Intelligent patient scheduling powered by AI. Talk to Kyra to find the right specialist and book your appointment.

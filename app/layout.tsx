@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: 'XYZ Medical — Patient Portal',
   description:
     'Schedule appointments with XYZ Medical specialists. Talk to Kyra, our AI patient care coordinator.',
-  icons: { icon: '/kyron_medical.webp' },
+  icons: { icon: '/favicon.ico' },
 }
 
 export default function RootLayout({
