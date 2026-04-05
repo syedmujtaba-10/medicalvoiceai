@@ -106,7 +106,7 @@ export function AppointmentConfirmationEmail({
             </Text>
             <Text style={footerDisclaimer}>
               This email was sent to you because you scheduled an appointment
-              through the Kyron Medical patient portal. This is an automated
+              through the XYZ Medical patient portal. This is an automated
               message — please do not reply directly to this email.
             </Text>
           </Section>

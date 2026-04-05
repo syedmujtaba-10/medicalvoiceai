@@ -1,6 +1,6 @@
-# Kyron Medical — AI Patient Scheduling Portal
+# XYZ Medical — AI Patient Scheduling Portal
 
-A production-ready patient scheduling web application that enables patients to book medical appointments through an intelligent AI chat interface, with seamless handoff to live voice calls. Built as a full-stack assessment for Kyron Medical Group.
+A production-ready patient scheduling web application that enables patients to book medical appointments through an intelligent AI chat interface, with seamless handoff to live voice calls. Built as a full-stack assessment for XYZ Medical Group.
 
 ---
 
@@ -25,7 +25,7 @@ A production-ready patient scheduling web application that enables patients to b
 
 ## Overview
 
-Kyron Medical's patient portal lets patients describe their symptoms, get matched to the right specialist, select an appointment slot, and receive confirmation — all through a natural conversation with **Kyra**, an AI care coordinator. When preferred, patients can seamlessly switch to a live voice call that picks up exactly where the chat left off, with no repeated intake questions.
+XYZ Medical's patient portal lets patients describe their symptoms, get matched to the right specialist, select an appointment slot, and receive confirmation — all through a natural conversation with **Kyra**, an AI care coordinator. When preferred, patients can seamlessly switch to a live voice call that picks up exactly where the chat left off, with no repeated intake questions.
 
 ---
 ## Live Demo
@@ -297,7 +297,7 @@ VAPI_PHONE_NUMBER=+1...
 
 # Resend
 RESEND_API_KEY=re_...
-EMAIL_FROM=Kyron Medical <appointments@yourdomain.com>
+EMAIL_FROM=XYZ Medical <appointments@yourdomain.com>
 
 # Twilio (optional — SMS only fires when smsOptIn: true)
 TWILIO_ACCOUNT_SID=AC...

@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Kyron Medical — Patient Portal',
+  title: 'XYZ Medical — Patient Portal',
   description:
-    'Schedule appointments with Kyron Medical specialists. Talk to Kyra, our AI patient care coordinator.',
+    'Schedule appointments with XYZ Medical specialists. Talk to Kyra, our AI patient care coordinator.',
   icons: { icon: '/kyron_medical.webp' },
 }
 

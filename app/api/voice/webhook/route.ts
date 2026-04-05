@@ -221,7 +221,7 @@ export async function POST(req: Request) {
                   `Available slots:\n${formatSlotsForAI(slots)}`
               } else {
                 result =
-                  "I'm sorry, we don't currently have a specialist at Kyron Medical for that condition. I can connect you with our general care team."
+                  "I'm sorry, we don't currently have a specialist at XYZ Medical for that condition. I can connect you with our general care team."
               }
             }
 

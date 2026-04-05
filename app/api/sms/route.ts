@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     })
 
     const messageBody =
-      `Hi ${patientName}! Your Kyron Medical appointment is confirmed.\n\n` +
+      `Hi ${patientName}! Your XYZ Medical appointment is confirmed.\n\n` +
       `📅 ${appointmentDate} ET\n` +
       `👨‍⚕️ ${doctorName}\n` +
       `🔑 Confirmation: ${confirmationCode}\n\n` +

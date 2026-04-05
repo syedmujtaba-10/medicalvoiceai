@@ -112,7 +112,7 @@ export function ChatInterface({ onNewAppointment }: ChatInterfaceProps) {
               <p className="text-sm font-semibold text-[#E8ECFF]">Kyra</p>
               <div className="flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
-                <p className="text-xs text-[#636478]">Patient Care Coordinator · Kyron Medical</p>
+                <p className="text-xs text-[#636478]">Patient Care Coordinator · XYZ Medical</p>
               </div>
             </div>
           </div>
@@ -136,7 +136,7 @@ export function ChatInterface({ onNewAppointment }: ChatInterfaceProps) {
                       Hello! I&apos;m Kyra.
                     </p>
                     <p className="mt-1 text-sm text-[#636478]">
-                      I&apos;m here to help you schedule an appointment at Kyron Medical.
+                      I&apos;m here to help you schedule an appointment at XYZ Medical.
                       <br />
                       How can I assist you today?
                     </p>

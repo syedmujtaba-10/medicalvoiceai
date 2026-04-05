@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     const recipient = process.env.EMAIL_TEST_RECIPIENT ?? to
 
     const { error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM ?? 'Kyron Medical <onboarding@resend.dev>',
+      from: process.env.EMAIL_FROM ?? 'XYZ Medical <onboarding@resend.dev>',
       to: recipient,
       subject: `Appointment Confirmed — ${appointmentDate} with ${doctorName}`,
       react: AppointmentConfirmationEmail({

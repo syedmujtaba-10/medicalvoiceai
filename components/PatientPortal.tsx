@@ -95,7 +95,7 @@ export function PatientPortal({ initialAppointments = [] }: PatientPortalProps) 
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/kyron_medical.webp"
-              alt="Kyron Medical"
+              alt="XYZ Medical"
               width={180}
               className="object-contain"
               style={{ width: '180px', height: 'auto' }}
@@ -166,7 +166,7 @@ export function PatientPortal({ initialAppointments = [] }: PatientPortalProps) 
               Practice Info
             </p>
             <div className="space-y-1.5 text-xs text-[#636478]">
-              <p className="font-medium text-[#9396B0]">Kyron Medical Group</p>
+              <p className="font-medium text-[#9396B0]">XYZ Medical Group</p>
               <p>123 Medical Center Drive, Suite 400</p>
               <p>Boston, MA 02115</p>
               <div className="my-3 h-px bg-[rgba(107,127,212,0.10)]" />
